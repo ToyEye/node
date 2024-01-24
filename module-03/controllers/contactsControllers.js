@@ -1,84 +1,80 @@
-import { json } from "express";
 import { HttpErrors } from "../helpers/HttpErrors.js";
 import { Contact } from "../models/contactSchema.js";
+import { ctrlWrapper } from "../decorators/ctrlWrapper.js";
 
-export const getAllContacts = async (req, res, next) => {
-  try {
-    const contacts = await Contact.find();
-    res.status(200).json(contacts);
-  } catch (error) {
-    next(error);
-  }
+const getAllContacts = async (req, res) => {
+  const { _id: owner } = req.user;
+
+  const { page, limit } = req.query;
+
+  const skip = (page - 1) * limit;
+
+  const contacts = await Contact.find({ owner }, "-updatedAt -createdAt", {
+    skip,
+    limit,
+  }).populate("owner", "name email");
+  res.status(200).json(contacts);
 };
 
-export const getContactById = async (req, res, next) => {
+const getContactById = async (req, res) => {
   const { id } = req.params;
-  console.log(id);
-  try {
-    const contact = await Contact.findById(id);
 
-    if (!contact) {
-      throw HttpErrors(404);
-    }
+  const contact = await Contact.findById(id);
 
-    res.status(200).json(contact);
-  } catch (error) {
-    next(error);
+  if (!contact) {
+    throw HttpErrors(404);
   }
+
+  res.status(200).json(contact);
 };
 
-export const deleteContact = async (req, res, next) => {
+const deleteContact = async (req, res) => {
   const { id } = req.params;
-  try {
-    const contact = await Contact.findByIdAndDelete(id);
 
-    if (!contact) {
-      throw HttpErrors(404);
-    }
-    res.status(200).json({ message: "deleting successful" });
-  } catch (error) {
-    next(error);
+  const contact = await Contact.findByIdAndDelete(id);
+
+  if (!contact) {
+    throw HttpErrors(404);
   }
+  res.status(200).json({ message: "deleting successful" });
 };
 
-export const createContact = async (req, res, next) => {
-  try {
-    const newContact = await Contact.create(req.body);
-    res.status(201).json(newContact);
-  } catch (error) {
-    next(error);
-  }
+const createContact = async (req, res) => {
+  const { _id: owner } = req.user;
+
+  const newContact = await Contact.create({ ...req.body, owner });
+  res.status(201).json(newContact);
 };
 
-export const updateContact = async (req, res, next) => {
+const updateContact = async (req, res) => {
   const { id } = req.params;
-  console.log(req.body);
-  try {
-    const updatedContact = await Contact.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
 
-    res.json(updatedContact);
-  } catch (error) {
-    next(error);
-  }
+  const updatedContact = await Contact.findByIdAndUpdate(id, req.body, {
+    new: true,
+  });
+
+  res.json(updatedContact);
 };
 
-export const updateStatusContact = async (req, res, next) => {
+const updateStatusContact = async (req, res) => {
   const { id } = req.params;
 
   if (!req.body) {
     res.status(400).json({ message: "missing field favorite" });
   }
 
-  console.log(req.body);
-  try {
-    const updatedContact = await Contact.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
+  const updatedContact = await Contact.findByIdAndUpdate(id, req.body, {
+    new: true,
+  });
 
-    res.json(updatedContact);
-  } catch (error) {
-    next(error);
-  }
+  res.json(updatedContact);
+};
+
+export default {
+  getAllContacts: ctrlWrapper(getAllContacts),
+  getContactById: ctrlWrapper(getContactById),
+  deleteContact: ctrlWrapper(deleteContact),
+  createContact: ctrlWrapper(createContact),
+  updateContact: ctrlWrapper(updateContact),
+  updateStatusContact: ctrlWrapper(updateStatusContact),
 };
