@@ -27,14 +27,12 @@ const login = async (req, res) => {
 
   const user = await User.findOne({ email });
 
-  console.log(user);
-
   if (!user) {
     throw HttpErrors(401, "Email or password invalid ");
   }
 
   const comparePassword = await bcrypt.compare(password, user.password);
-  console.log(comparePassword);
+
   if (!comparePassword) {
     throw HttpErrors(401, "Email or password invalid ");
   }

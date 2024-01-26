@@ -25,6 +25,11 @@ usersRoute.get("/current", authenticate, authCtrl.getCurrent);
 
 usersRoute.post("/logout", authenticate, authCtrl.logout);
 
-usersRoute.patch("/subscription", authenticate, authCtrl.changeSubscription);
+usersRoute.patch(
+  "/subscription",
+  authenticate,
+  validateBody(schemas.changeSubscribeSchema),
+  authCtrl.changeSubscription
+);
 
 export default usersRoute;
