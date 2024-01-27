@@ -32,4 +32,12 @@ usersRoute.patch(
   authCtrl.changeSubscription
 );
 
+usersRoute.get("/verify/:verifyCode", authCtrl.verify);
+
+usersRoute.post(
+  "/verify",
+  validateBody(schemas.verifySchema),
+  authCtrl.resendVerifyEmail
+);
+
 export default usersRoute;

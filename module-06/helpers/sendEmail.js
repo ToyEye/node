@@ -4,7 +4,7 @@ const { SEND_EMAIL, SEND_EMAIL_PASS } = process.env;
 
 const nodemailerConfig = {
   host: "smtp.ukr.net",
-  port: 465, // 25, 465, 2525
+  port: 465,
   secure: true,
   auth: {
     user: SEND_EMAIL,
